@@ -94,9 +94,19 @@ def apply_to_job(
             actor_user_id=user.id,
             event_type="new_application_received",
             title="New application received",
-            message=f"{candidate.name} applied for {job_posting.job_title}",
-            payload={"application_id": application.id, "candidate_id": candidate.id, "job_posting_id": job_posting.id, "job_profile_id": job_profile_id}
+            message=f"{candidate.name} applied for {job_posting.job_title} ({job_profile.profile_name})",
+            payload={"application_id": application.id, "candidate_id": candidate.id, "candidate_name": candidate.name, "job_posting_id": job_posting.id, "job_title": job_posting.job_title, "job_profile_id": job_profile_id, "job_profile_name": job_profile.profile_name}
         )
+
+    create_notification(
+        session,
+        user_id=user.id,
+        actor_user_id=user.id,
+        event_type="application_submitted",
+        title="Application submitted",
+        message=f"You applied for {job_posting.job_title} using profile {job_profile.profile_name}",
+        payload={"application_id": application.id, "job_posting_id": job_posting.id, "job_title": job_posting.job_title, "job_profile_id": job_profile_id, "job_profile_name": job_profile.profile_name}
+    )
 
     session.commit()
     session.refresh(application)
@@ -172,6 +182,19 @@ def update_application_status(
         message=f"Your application for {job_posting.job_title} is now '{status}'",
         payload={"application_id": application.id, "job_posting_id": job_posting.id, "status": status}
     )
+
+    if status == "shortlisted":
+        candidate = session.get(Candidate, application.candidate_id)
+        candidate_name = candidate.name if candidate else "Candidate"
+        create_notification(
+            session,
+            user_id=user.id,
+            actor_user_id=user.id,
+            event_type="candidate_shortlisted",
+            title="Candidate shortlisted",
+            message=f"{candidate_name} shortlisted for {job_posting.job_title}",
+            payload={"application_id": application.id, "candidate_id": application.candidate_id, "candidate_name": candidate_name, "job_posting_id": job_posting.id, "job_title": job_posting.job_title}
+        )
 
     session.commit()
     

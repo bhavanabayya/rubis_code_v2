@@ -184,7 +184,83 @@ Typical screen blocks:
 
 ---
 
-## 7) Commercial Narrative for Sales
+
+## 7) Recommendation Engine Explained (How It Works in This App)
+The recommendation engine is the ranking core that decides which candidates to show recruiters and which jobs to show candidates. It uses a weighted scoring model and interaction-aware filtering.
+
+### 7.1 Scoring Objective
+Generate a practical match percentage (0–100) for each candidate job profile against a job posting, then rank results by highest score.
+
+### 7.2 Inputs Used by the Engine
+- Job posting attributes: product vendor, product type, role, seniority, salary band, location, work type, required skills.
+- Candidate job profile attributes: product vendor/type, role preference, experience years, salary expectations, work type, location preferences, profile skills.
+- Interaction data: existing swipes and existing matches to flag already-contacted candidates.
+
+### 7.3 Weighted Match Formula
+The engine applies these core weighted dimensions:
+- **Product/Role match:** 35%
+- **Skills match:** 25%
+- **Experience match:** 20%
+- **Salary match:** 10%
+- **Location match:** 10%
+
+It then applies a small work-type alignment bonus and caps final score at 100.
+
+### 7.4 Scoring Logic by Dimension
+1. **Product/Role Fit (35%)**
+   - Strongest weight.
+   - Full score when vendor + product type + role align.
+   - Partial score for partial overlap (e.g., same vendor but different type/role).
+
+2. **Skills Fit (25%)**
+   - Parses required job skills and compares them to candidate profile skills.
+   - Calculates matched-skill ratio and converts it to a weighted skill score.
+   - Stores matched skill names for recruiter explainability.
+
+3. **Experience Fit (20%)**
+   - Attempts to infer minimum years from posting seniority conventions.
+   - Grants full/partial credit depending on candidate years-of-experience coverage.
+
+4. **Salary Fit (10%)**
+   - Compares candidate expected salary range and posting salary range.
+   - Scores strongest when ranges overlap; partial credit if near-band.
+
+5. **Location Fit (10%)**
+   - Uses candidate location preferences vs job location string.
+   - Treats remote alignment as a location-positive case.
+
+### 7.5 Result Qualification and Ranking
+After score calculation:
+- Profiles below the threshold are filtered out (app uses a pragmatic cutoff for broad discoverability).
+- Remaining recommendations are sorted descending by `match_percent`.
+- Deduplication keeps the best profile per candidate when multiple profiles exist.
+
+### 7.6 Recruiter-Facing Recommendation Output
+Each recommendation payload can include:
+- Candidate identity and profile context
+- Match percent and match detail breakdown
+- Matched skill list
+- Already-swiped / already-matched flags
+- Mutual-match indicator
+- Salary/work-type summary
+
+This supports fast recruiter decisions without opening every candidate profile manually.
+
+### 7.7 Candidate-Side Recommendation Behavior
+The candidate dashboard uses analogous scoring logic from the opposite direction (job relevance to a selected candidate profile):
+- candidate selects profile
+- jobs are scored and ranked
+- candidate actions (like/pass/ask-to-apply/apply) feed back into interaction and application funnels
+
+### 7.8 Why This Design Works for MVP Sales Demos
+- **Explainable:** weighted components are easy to communicate.
+- **Actionable:** each ranked row has immediate actions.
+- **Measurable:** score + interaction data can be tied to funnel KPIs.
+- **Extensible:** weights and rules can be configured in later phases.
+
+---
+
+## 8) Commercial Narrative for Sales
 ### Why this matters to buyers
 - **Faster hiring decisions:** ranked recommendations reduce first-pass screening time.
 - **Higher conversion potential:** invite flows and mutual-interest indicators improve engagement quality.
@@ -203,7 +279,7 @@ Typical screen blocks:
 
 ---
 
-## 8) Demo Plan (7-minute Story)
+## 9) Demo Plan (7-minute Story)
 1. Recruiter logs in and creates a posting.
 2. System returns ranked candidate recommendations.
 3. Recruiter sends interest (like / ask-to-apply).
@@ -215,7 +291,6 @@ Outcome shown: closed loop from requirement definition to candidate pipeline mov
 ---
 
 ## 10) Risks, Gaps, and Product Maturity Roadmap
-## 9) Risks, Gaps, and Product Maturity Roadmap
 ### Current strengths
 - Functional MVP architecture is already present.
 - Clear domain boundaries and API-led implementation.
@@ -233,7 +308,7 @@ Outcome shown: closed loop from requirement definition to candidate pipeline mov
 
 ---
 
-## 10) What to Send to Sales Leadership
+## 11) What to Send to Sales Leadership
 Include this package:
 1. Executive one-pager (problem, solution, impact)
 2. 8–10 slide narrative deck
@@ -244,24 +319,4 @@ This framing gives both commercial confidence and technical credibility for acco
 
 ---
 
-## 11) Suggested Email Template (Ready to Use)
-**Subject:** TalentGraph V2 Concept Submission — Commercial + Technical Pilot Proposal
 
-Hi Team,
-
-I’m sharing a proposed TalentGraph V2 concept that combines recommendation-driven talent matching with workflow-level recruiter/candidate engagement.
-
-Attached:
-1. Executive summary
-2. Product + architecture overview
-3. Pilot plan with measurable KPIs
-
-Why this is compelling:
-- Improves candidate-job fit prioritization
-- Reduces manual screening overhead
-- Increases recruiter actionability through scored recommendations and invite/apply workflows
-
-If approved, we can run a scoped pilot with defined success metrics in 60–90 days.
-
-Thanks,
-[Your Name]
