@@ -32,7 +32,7 @@ def init_db():
     # Import all models so they're registered
     from app.models import (
         User, Candidate, Resume, Certification, Skill, JobProfile,
-        Company, JobPosting, Swipe, Match, Application
+        Company, JobPosting, Swipe, Match, Application, Notification
     )
     
     SQLModel.metadata.create_all(engine)
