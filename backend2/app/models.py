@@ -328,3 +328,16 @@ class Application(SQLModel, table=True):
     # Relationships
     candidate: Candidate = Relationship(back_populates="applications")
     job_posting: JobPosting = Relationship(back_populates="applications")
+
+
+class Notification(SQLModel, table=True):
+    """User notification events for dashboard bell icon"""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id", index=True)
+    actor_user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    event_type: str
+    title: str
+    message: str
+    payload_json: Optional[str] = None
+    is_read: bool = Field(default=False, index=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)

@@ -4,15 +4,28 @@ Like/Pass interactions from candidates
 """
 
 import logging
+import json
 from fastapi import APIRouter, HTTPException, Depends, status, Body
 from pydantic import BaseModel
 from sqlmodel import Session, select
 from app.database import get_session
-from app.models import Swipe, Candidate, Company, JobPosting, JobProfile, User, Match
+from app.models import Swipe, Candidate, Company, JobPosting, JobProfile, User, Match, Notification
 from app.security import get_current_user
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/swipes", tags=["Swipes"])
+
+
+def create_notification(session: Session, user_id: int, event_type: str, title: str, message: str, payload: dict | None = None, actor_user_id: int | None = None):
+    notif = Notification(
+        user_id=user_id,
+        actor_user_id=actor_user_id,
+        event_type=event_type,
+        title=title,
+        message=message,
+        payload_json=json.dumps(payload) if payload else None,
+    )
+    session.add(notif)
 
 
 class CandidateSwipeRequest(BaseModel):
@@ -96,6 +109,20 @@ def swipe_like(
         session.add(match)
     
     session.add(swipe)
+
+    # Notify recruiter/company user who owns this posting
+    posting_company = session.get(Company, job_posting.company_id)
+    if posting_company:
+        create_notification(
+            session,
+            user_id=posting_company.user_id,
+            actor_user_id=user.id,
+            event_type="candidate_liked_job",
+            title="Candidate liked your job",
+            message=f"{candidate.name} liked {job_posting.job_title}",
+            payload={"candidate_id": candidate.id, "job_posting_id": job_posting.id, "job_profile_id": job_profile_id}
+        )
+
     session.commit()
     
     return {"message": "Liked job posting", "action": "like"}
@@ -201,6 +228,19 @@ def ask_to_apply(
         session.add(match)
     
     session.add(swipe)
+
+    posting_company = session.get(Company, job_posting.company_id)
+    if posting_company:
+        create_notification(
+            session,
+            user_id=posting_company.user_id,
+            actor_user_id=user.id,
+            event_type="candidate_asked_to_apply",
+            title="Candidate requested to apply",
+            message=f"{candidate.name} asked to apply for {job_posting.job_title}",
+            payload={"candidate_id": candidate.id, "job_posting_id": job_posting.id, "job_profile_id": job_profile_id}
+        )
+
     session.commit()
     
     return {"message": "Asked to apply for job", "action": "ask_to_apply"}
@@ -269,6 +309,17 @@ def recruiter_like(
         session.add(match)
     
     session.add(swipe)
+
+    create_notification(
+        session,
+        user_id=candidate.user_id,
+        actor_user_id=user.id,
+        event_type="recruiter_liked_profile",
+        title="Recruiter liked your profile",
+        message=f"{company.company_name or 'A recruiter'} liked your profile for {job_posting.job_title}",
+        payload={"candidate_id": candidate.id, "job_posting_id": job_posting.id, "job_profile_id": data.job_profile_id}
+    )
+
     session.commit()
     logger.info(f"[RECRUITER LIKE] Success - swipe recorded for candidate {data.candidate_id}")
     
@@ -373,6 +424,19 @@ def recruiter_ask_to_apply(
         session.add(match)
     
     session.add(swipe)
+
+    candidate = session.get(Candidate, data.candidate_id)
+    if candidate:
+        create_notification(
+            session,
+            user_id=candidate.user_id,
+            actor_user_id=user.id,
+            event_type="recruiter_asked_to_apply",
+            title="Recruiter invited you to apply",
+            message=f"{company.company_name or 'A recruiter'} invited you to apply for {job_posting.job_title}",
+            payload={"candidate_id": data.candidate_id, "job_posting_id": job_posting.id, "job_profile_id": data.job_profile_id}
+        )
+
     session.commit()
     
     return {"message": "Asked candidate to apply", "action": "ask_to_apply"}

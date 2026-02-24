@@ -4,17 +4,29 @@ Candidate job applications and recruiter application management
 """
 
 import logging
+import json
 from fastapi import APIRouter, HTTPException, Depends, status
 from pydantic import BaseModel
 from sqlmodel import Session, select
 from typing import List
 from app.database import get_session
-from app.models import Application, Candidate, Company, JobPosting, JobProfile, User
+from app.models import Application, Candidate, Company, JobPosting, JobProfile, User, Notification
 from app.schemas import ApplicationRead
 from app.security import get_current_user
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/applications", tags=["Applications"])
+
+
+def create_notification(session: Session, user_id: int, event_type: str, title: str, message: str, payload: dict | None = None, actor_user_id: int | None = None):
+    session.add(Notification(
+        user_id=user_id,
+        actor_user_id=actor_user_id,
+        event_type=event_type,
+        title=title,
+        message=message,
+        payload_json=json.dumps(payload) if payload else None,
+    ))
 
 
 class ApplicationApplyRequest(BaseModel):
@@ -72,6 +84,20 @@ def apply_to_job(
     )
     
     session.add(application)
+    session.flush()
+
+    posting_company = session.get(Company, job_posting.company_id)
+    if posting_company:
+        create_notification(
+            session,
+            user_id=posting_company.user_id,
+            actor_user_id=user.id,
+            event_type="new_application_received",
+            title="New application received",
+            message=f"{candidate.name} applied for {job_posting.job_title}",
+            payload={"application_id": application.id, "candidate_id": candidate.id, "job_posting_id": job_posting.id, "job_profile_id": job_profile_id}
+        )
+
     session.commit()
     session.refresh(application)
     
@@ -136,6 +162,17 @@ def update_application_status(
     
     application.status = status
     session.add(application)
+
+    create_notification(
+        session,
+        user_id=application.candidate.user_id,
+        actor_user_id=user.id,
+        event_type="application_status_changed",
+        title="Application status updated",
+        message=f"Your application for {job_posting.job_title} is now '{status}'",
+        payload={"application_id": application.id, "job_posting_id": job_posting.id, "status": status}
+    )
+
     session.commit()
     
     return {

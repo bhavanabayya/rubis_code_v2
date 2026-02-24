@@ -214,6 +214,7 @@ Outcome shown: closed loop from requirement definition to candidate pipeline mov
 
 ---
 
+## 10) Risks, Gaps, and Product Maturity Roadmap
 ## 9) Risks, Gaps, and Product Maturity Roadmap
 ### Current strengths
 - Functional MVP architecture is already present.
