@@ -26,6 +26,9 @@ const CandidateDashboard: React.FC = () => {
   const [viewAvailableJob, setViewAvailableJob] = useState<any | null>(null);
   const [viewMatchJob, setViewMatchJob] = useState<any | null>(null);
   const [viewRecommendationJob, setViewRecommendationJob] = useState<any | null>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
     fetchUserProfile();
@@ -34,6 +37,7 @@ const CandidateDashboard: React.FC = () => {
     fetchAvailableJobs();
     fetchAppliedLiked();
     fetchMatches();
+    fetchNotifications();
   }, []);
 
   useEffect(() => {
@@ -42,6 +46,13 @@ const CandidateDashboard: React.FC = () => {
       setRecCardIndex(0);
     }
   }, [selectedProfileId]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchNotifications();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Keyboard navigation for recommendation cards
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -131,6 +142,49 @@ const CandidateDashboard: React.FC = () => {
       setMatches(response.data);
     } catch (error) {
       console.error('Failed to fetch matches:', error);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const [listRes, countRes] = await Promise.all([
+        apiClient.getNotifications(false, 30),
+        apiClient.getUnreadNotificationCount(),
+      ]);
+      setNotifications(listRes.data || []);
+      setUnreadNotifications(countRes.data?.unread_count || 0);
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    }
+  };
+
+  const handleNotificationClick = async (notification: any) => {
+    try {
+      if (!notification.is_read) {
+        await apiClient.markNotificationRead(notification.id);
+      }
+      const payload = notification.payload || {};
+      if (payload.job_posting_id) {
+        const targetInvite = invites.find((i: any) => i.job_posting?.id === payload.job_posting_id);
+        if (targetInvite) {
+          setActiveTab('invites');
+          setViewInviteJob(targetInvite);
+          setShowNotifications(false);
+          fetchNotifications();
+          return;
+        }
+      }
+      if (notification.event_type?.includes('application')) {
+        setActiveTab('applied');
+      } else if (notification.event_type?.includes('asked_to_apply')) {
+        setActiveTab('invites');
+      } else {
+        setActiveTab('matches');
+      }
+      setShowNotifications(false);
+      fetchNotifications();
+    } catch (error) {
+      console.error('Failed to open notification:', error);
     }
   };
 
@@ -1940,11 +1994,11 @@ const CandidateDashboard: React.FC = () => {
           <h1 className="page-title">Candidate Dashboard</h1>
         </div>
         <div className="navbar-right">
-          <button className="icon-btn notification-btn" title="Notifications">
+          <button className="icon-btn notification-btn" title="Notifications" onClick={() => setShowNotifications(prev => !prev)}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
             </svg>
-            {(invites.length + matches.length) > 0 && <span className="badge-dot"></span>}
+            {unreadNotifications > 0 && <span className="badge-dot"></span>}
           </button>
           <div className="profile-dropdown">
             <button 
@@ -1984,6 +2038,26 @@ const CandidateDashboard: React.FC = () => {
           </div>
         </div>
       </nav>
+
+      {showNotifications && (
+        <div style={{ position: 'fixed', top: 70, right: 20, width: 360, maxHeight: '70vh', overflowY: 'auto', background: 'white', border: '1px solid #e5e7eb', borderRadius: 12, boxShadow: '0 10px 30px rgba(0,0,0,0.15)', zIndex: 1200 }}>
+          <div style={{ padding: '12px 14px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <strong>Notifications</strong>
+            <button onClick={async () => { await apiClient.markAllNotificationsRead(); fetchNotifications(); }} style={{ border: 'none', background: 'transparent', color: '#4f46e5', cursor: 'pointer' }}>Mark all read</button>
+          </div>
+          {(notifications || []).length === 0 ? (
+            <div style={{ padding: 16, color: '#6b7280' }}>No notifications yet.</div>
+          ) : (
+            notifications.map((n: any) => (
+              <button key={n.id} onClick={() => handleNotificationClick(n)} style={{ width: '100%', textAlign: 'left', border: 'none', background: n.is_read ? 'white' : '#f5f3ff', padding: '12px 14px', borderBottom: '1px solid #f3f4f6', cursor: 'pointer' }}>
+                <div style={{ fontWeight: 600, fontSize: 13 }}>{n.title}</div>
+                <div style={{ fontSize: 12, color: '#4b5563', marginTop: 4 }}>{n.message}</div>
+                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>{new Date(n.created_at).toLocaleString()}</div>
+              </button>
+            ))
+          )}
+        </div>
+      )}
 
       <div className="dashboard-layout">
         {/* Left Sidebar Navigation */}

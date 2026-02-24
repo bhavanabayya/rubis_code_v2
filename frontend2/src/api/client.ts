@@ -234,6 +234,20 @@ export const apiClient = {
   // Team Management
   getTeamMembers: () =>
     api.get('/dashboard/team-members'),
+
+  // Notifications
+  getNotifications: (unreadOnly: boolean = false, limit: number = 50) =>
+    api.get(`/notifications?unread_only=${unreadOnly}&limit=${limit}`),
+
+  getUnreadNotificationCount: () =>
+    api.get('/notifications/unread-count'),
+
+  markNotificationRead: (id: number) =>
+    api.post(`/notifications/${id}/read`),
+
+  markAllNotificationsRead: () =>
+    api.post('/notifications/read-all'),
+
 };
 
 export default api;
