@@ -86,7 +86,105 @@ TalentGraph V2 addresses this with transparent match scoring and interaction pat
 
 ---
 
-## 6) Commercial Narrative for Sales
+## 6) Dashboard Experience & Functional Flow (Detailed)
+This section describes what each dashboard looks like from a user perspective, what modules it includes, and the exact functional flow.
+
+### 6.1 Candidate Dashboard — Layout and Modules
+The candidate dashboard is designed as a "job discovery + action center" with focus on visibility and quick decisions.
+
+Typical screen blocks:
+- **Profile Context Header**
+  - Active job profile selector (if candidate has multiple profiles)
+  - Profile completeness/state indicators
+- **Recommended Jobs Feed**
+  - Ranked list/cards of matched jobs with match %
+  - Job snapshot: title, company, location, work type, salary range, role/domain
+- **Action Controls per Job**
+  - Like
+  - Pass
+  - Ask to Apply (candidate-initiated interest)
+  - Apply now (formal application)
+- **Recruiter Invites Panel**
+  - Jobs where recruiter asked candidate to apply
+  - Shows invite time and whether already applied
+- **Applications Tracker**
+  - Applied jobs with status (applied/reviewed/shortlisted/rejected/offered)
+- **Matches & Mutual Interest View**
+  - Jobs/companies where both sides show positive intent
+
+### 6.2 Candidate Dashboard — Functional Flow
+1. Candidate logs in and selects a job profile.
+2. System fetches recommendations for that profile.
+3. Candidate reviews ranked opportunities with match insights.
+4. Candidate interacts (like/pass/ask-to-apply) or applies directly.
+5. Dashboard updates action state (already swiped/applied/matched).
+6. Candidate monitors recruiter invites and application statuses.
+
+### 6.3 Candidate Dashboard — Main Functionalities
+- Manage and switch job profiles
+- Browse recommendations sorted by score
+- Perform swipe-style actions on jobs
+- Submit applications tied to a selected profile
+- Track recruiter invites
+- Track own application pipeline and match state
+
+---
+
+### 6.4 Recruiter Dashboard — Layout and Modules
+The recruiter dashboard is a "hiring command center" oriented around requisitions, candidate quality, and pipeline execution.
+
+Typical screen blocks:
+- **Job Posting Selector / Job Tiles**
+  - Active jobs list with quick metrics
+  - Open/inactive state and ownership context
+- **Recommended Candidates Panel (per job)**
+  - Ranked candidates with match % and explanation snippets
+  - Candidate profile info: skills, experience, work type, salary expectation
+- **Shortlist / Interaction Board**
+  - Candidates recruiter liked
+  - Candidates invited (ask-to-apply)
+  - Mutual matches
+- **Applications Pipeline**
+  - Candidate applications for selected job(s)
+  - Status update controls (reviewed, shortlisted, rejected, offered)
+- **Team/Operational View (if applicable)**
+  - Shared visibility for company users
+  - Cross-job workload and interaction snapshots
+
+### 6.5 Recruiter Dashboard — Functional Flow
+1. Recruiter logs in and opens a job posting (or creates one).
+2. Dashboard shows top recommended candidates for that job.
+3. Recruiter reviews candidate match details and profile fit.
+4. Recruiter takes action (like/pass/ask-to-apply).
+5. Candidate responses/applications feed into recruiter application board.
+6. Recruiter updates application statuses through hiring stages.
+7. Dashboard reflects conversion funnel: recommendations → interactions → applications → shortlist/offer.
+
+### 6.6 Recruiter Dashboard — Main Functionalities
+- Create/update/archive job postings
+- View candidate recommendations by requisition
+- Take interaction actions on candidates
+- Build and manage shortlist
+- Review applications and update hiring status
+- Monitor high-level hiring funnel performance by role/job
+
+---
+
+### 6.7 Combined Dashboard Capability Matrix
+| Capability | Candidate Dashboard | Recruiter Dashboard |
+|---|---|---|
+| Authentication & role access | ✅ | ✅ |
+| Profile management | ✅ Candidate profile + job profiles | ✅ Company profile |
+| Job posting management | ❌ | ✅ |
+| Candidate recommendations | Job recommendations | Candidate recommendations by job |
+| Swipe interactions | Like/Pass/Ask-to-Apply on jobs | Like/Pass/Ask-to-Apply on candidates |
+| Invite handling | Receive & act on invites | Send invites to candidates |
+| Application management | Submit + track own applications | Review + status updates |
+| Match visibility | Mutual match view | Mutual match view |
+
+---
+
+## 7) Commercial Narrative for Sales
 ### Why this matters to buyers
 - **Faster hiring decisions:** ranked recommendations reduce first-pass screening time.
 - **Higher conversion potential:** invite flows and mutual-interest indicators improve engagement quality.
@@ -105,7 +203,7 @@ TalentGraph V2 addresses this with transparent match scoring and interaction pat
 
 ---
 
-## 7) Demo Plan (7-minute Story)
+## 8) Demo Plan (7-minute Story)
 1. Recruiter logs in and creates a posting.
 2. System returns ranked candidate recommendations.
 3. Recruiter sends interest (like / ask-to-apply).
@@ -116,7 +214,7 @@ Outcome shown: closed loop from requirement definition to candidate pipeline mov
 
 ---
 
-## 8) Risks, Gaps, and Product Maturity Roadmap
+## 9) Risks, Gaps, and Product Maturity Roadmap
 ### Current strengths
 - Functional MVP architecture is already present.
 - Clear domain boundaries and API-led implementation.
@@ -134,7 +232,7 @@ Outcome shown: closed loop from requirement definition to candidate pipeline mov
 
 ---
 
-## 9) What to Send to Sales Leadership
+## 10) What to Send to Sales Leadership
 Include this package:
 1. Executive one-pager (problem, solution, impact)
 2. 8–10 slide narrative deck
@@ -145,7 +243,7 @@ This framing gives both commercial confidence and technical credibility for acco
 
 ---
 
-## 10) Suggested Email Template (Ready to Use)
+## 11) Suggested Email Template (Ready to Use)
 **Subject:** TalentGraph V2 Concept Submission — Commercial + Technical Pilot Proposal
 
 Hi Team,
