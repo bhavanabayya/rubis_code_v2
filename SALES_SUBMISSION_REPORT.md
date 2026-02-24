@@ -319,24 +319,4 @@ This framing gives both commercial confidence and technical credibility for acco
 
 ---
 
-## 12) Suggested Email Template (Ready to Use)
-**Subject:** TalentGraph V2 Concept Submission — Commercial + Technical Pilot Proposal
 
-Hi Team,
-
-I’m sharing a proposed TalentGraph V2 concept that combines recommendation-driven talent matching with workflow-level recruiter/candidate engagement.
-
-Attached:
-1. Executive summary
-2. Product + architecture overview
-3. Pilot plan with measurable KPIs
-
-Why this is compelling:
-- Improves candidate-job fit prioritization
-- Reduces manual screening overhead
-- Increases recruiter actionability through scored recommendations and invite/apply workflows
-
-If approved, we can run a scoped pilot with defined success metrics in 60–90 days.
-
-Thanks,
-[Your Name]
