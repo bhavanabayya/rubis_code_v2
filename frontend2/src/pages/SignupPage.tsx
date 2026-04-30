@@ -379,7 +379,9 @@ const SignupPage: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                const userTypeParam = formData.userType === 'candidate' ? '?type=candidate' : '?type=company';
+                const userTypeParam = formData.userType === 'candidate'
+                  ? '?type=candidate'
+                  : (formData.companyRole === 'recruiter' ? '?role=recruiter' : '?type=company');
                 navigate(isSignIn ? `/signup${userTypeParam}` : `/signin${userTypeParam}`);
               }}
               style={{
